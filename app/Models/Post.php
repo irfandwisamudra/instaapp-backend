@@ -10,6 +10,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string|null $body
+ * @property string|null $image_path
+ * @property bool|null $liked_by_user
+ * @property int|null $likes_count
+ * @property int|null $comments_count
+ * @property User $user
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */

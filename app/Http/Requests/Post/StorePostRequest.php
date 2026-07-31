@@ -4,7 +4,6 @@ namespace App\Http\Requests\Post;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-
 use Illuminate\Validation\Validator;
 
 class StorePostRequest extends FormRequest
