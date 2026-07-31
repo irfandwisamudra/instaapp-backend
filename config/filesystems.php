@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'post_images_disk' => env('POST_IMAGES_DISK', 'public'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
