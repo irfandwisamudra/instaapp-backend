@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -8,14 +10,32 @@ use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
-test('user can view own profile', function () {
+test('user can view own profile with received likes and comments count', function () {
     $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    // Create 2 posts for $user
+    $post1 = Post::factory()->create(['user_id' => $user->id]);
+    $post2 = Post::factory()->create(['user_id' => $user->id]);
+
+    // $otherUser likes both posts of $user (2 received likes)
+    Like::factory()->create(['user_id' => $otherUser->id, 'post_id' => $post1->id]);
+    Like::factory()->create(['user_id' => $otherUser->id, 'post_id' => $post2->id]);
+
+    // $otherUser comments on post1 (1 received comment)
+    Comment::factory()->create(['user_id' => $otherUser->id, 'post_id' => $post1->id]);
+
+    // $user likes another user's post (should NOT count towards $user's received likes)
+    $otherPost = Post::factory()->create(['user_id' => $otherUser->id]);
+    Like::factory()->create(['user_id' => $user->id, 'post_id' => $otherPost->id]);
 
     $response = $this->actingAs($user)->getJson('/api/v1/profile');
 
     $response->assertStatus(200)
         ->assertJsonPath('data.id', $user->id)
-        ->assertJsonPath('data.email', $user->email);
+        ->assertJsonPath('data.posts_count', 2)
+        ->assertJsonPath('data.likes_count', 2)
+        ->assertJsonPath('data.comments_count', 1);
 });
 
 test('user can view public profile by username', function () {

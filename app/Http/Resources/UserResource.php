@@ -29,8 +29,8 @@ class UserResource extends JsonResource
                 : null,
             'bio'            => $this->bio,
             'posts_count'    => $this->whenCounted('posts', $this->posts_count),
-            'likes_count'    => $this->whenCounted('likes', $this->likes_count),
-            'comments_count' => $this->whenCounted('comments', $this->comments_count),
+            'likes_count'    => $this->whenCounted('receivedLikes', $this->received_likes_count, $this->whenCounted('likes', $this->likes_count)),
+            'comments_count' => $this->whenCounted('receivedComments', $this->received_comments_count, $this->whenCounted('comments', $this->comments_count)),
             'created_at'     => $this->created_at?->toISOString(),
             'updated_at'     => $this->updated_at?->toISOString(),
         ];

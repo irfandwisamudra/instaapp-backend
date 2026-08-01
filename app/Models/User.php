@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -64,5 +65,21 @@ class User extends Authenticatable
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Likes received across all posts owned by this user.
+     */
+    public function receivedLikes(): HasManyThrough
+    {
+        return $this->hasManyThrough(Like::class, Post::class);
+    }
+
+    /**
+     * Comments received across all posts owned by this user.
+     */
+    public function receivedComments(): HasManyThrough
+    {
+        return $this->hasManyThrough(Comment::class, Post::class);
     }
 }

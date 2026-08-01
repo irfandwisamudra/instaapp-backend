@@ -21,7 +21,7 @@ class ProfileController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $user->loadCount(['posts', 'likes', 'comments']);
+        $user->loadCount(['posts', 'receivedLikes', 'receivedComments']);
 
         return new UserResource($user);
     }
@@ -46,7 +46,6 @@ class ProfileController extends Controller
 
         // Handle avatar upload
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-            // Delete the old avatar only after the new one is stored
             $oldPath = $user->avatar_path;
 
             $extension = $request->file('avatar')->getClientOriginalExtension();
@@ -66,7 +65,7 @@ class ProfileController extends Controller
         unset($validated['remove_avatar'], $validated['avatar']);
 
         $user->update($validated);
-        $user->loadCount(['posts', 'likes', 'comments']);
+        $user->loadCount(['posts', 'receivedLikes', 'receivedComments']);
 
         return new UserResource($user);
     }
@@ -78,7 +77,7 @@ class ProfileController extends Controller
     {
         $user = User::query()
             ->where('username', $username)
-            ->withCount(['posts', 'likes', 'comments'])
+            ->withCount(['posts', 'receivedLikes', 'receivedComments'])
             ->firstOrFail();
 
         return new UserResource($user);
