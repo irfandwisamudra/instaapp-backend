@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
@@ -27,6 +28,10 @@ Route::prefix('v1')->group(function () {
         // Auth
         Route::get('/user', [AuthController::class, 'user'])->name('auth.user');
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+        // Explore & Search
+        Route::get('/explore/posts', [ExploreController::class, 'posts'])->name('explore.posts');
+        Route::get('/explore/users', [ExploreController::class, 'users'])->name('explore.users');
 
         // Posts
         Route::apiResource('posts', PostController::class);
