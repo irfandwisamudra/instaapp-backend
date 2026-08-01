@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Post;
+use App\Models\SavedPost;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -18,10 +19,23 @@ test('authenticated user can view posts feed', function () {
         ->assertJsonCount(3, 'data')
         ->assertJsonStructure([
             'data' => [
-                '*' => ['id', 'user', 'body', 'image_url', 'likes_count', 'comments_count', 'liked_by_user', 'can_update', 'can_delete'],
+                '*' => ['id', 'user', 'body', 'image_url', 'likes_count', 'comments_count', 'liked_by_user', 'is_saved', 'can_update', 'can_delete'],
             ],
             'meta' => ['current_page', 'per_page', 'total'],
         ]);
+});
+
+test('authenticated user can show single post with is_saved status', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->create();
+
+    SavedPost::create(['user_id' => $user->id, 'post_id' => $post->id]);
+
+    $response = $this->actingAs($user)->getJson("/api/v1/posts/{$post->id}");
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.id', $post->id)
+        ->assertJsonPath('data.is_saved', true);
 });
 
 test('authenticated user can create a text post', function () {
@@ -33,6 +47,7 @@ test('authenticated user can create a text post', function () {
 
     $response->assertStatus(201)
         ->assertJsonPath('data.body', 'My first post!')
+        ->assertJsonPath('data.is_saved', false)
         ->assertJsonPath('data.can_update', true);
 
     $this->assertDatabaseHas('posts', [

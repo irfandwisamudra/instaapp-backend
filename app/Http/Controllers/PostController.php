@@ -48,6 +48,7 @@ class PostController extends Controller
 
         $post->load(['user'])->loadCount(['likes', 'comments']);
         $post->liked_by_user = false;
+        $post->is_saved = false;
 
         return (new PostResource($post))
             ->response()
@@ -65,6 +66,7 @@ class PostController extends Controller
 
         $post->load(['user'])->loadCount(['likes', 'comments']);
         $post->liked_by_user = $authUserId ? $post->likes()->where('user_id', $authUserId)->exists() : false;
+        $post->is_saved = $authUserId ? $post->savedByUsers()->where('user_id', $authUserId)->exists() : false;
 
         return new PostResource($post);
     }
@@ -86,6 +88,7 @@ class PostController extends Controller
         $authUserId = $request->user()?->id;
         $updated->load(['user'])->loadCount(['likes', 'comments']);
         $updated->liked_by_user = $authUserId ? $updated->likes()->where('user_id', $authUserId)->exists() : false;
+        $updated->is_saved = $authUserId ? $updated->savedByUsers()->where('user_id', $authUserId)->exists() : false;
 
         return new PostResource($updated);
     }
