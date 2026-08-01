@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $body
  * @property string|null $image_path
  * @property bool|null $liked_by_user
+ * @property bool|null $is_saved
  * @property int|null $likes_count
  * @property int|null $comments_count
  * @property User $user
@@ -66,6 +67,11 @@ class Post extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function savedByUsers(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
     public function getImageUrlAttribute(): ?string
     {
         if (! $this->image_path) {
@@ -78,7 +84,7 @@ class Post extends Model
     }
 
     /**
-     * Scope query with feed counts and auth user like status.
+     * Scope query with feed counts and auth user like & saved status.
      *
      * @param  Builder<Post>  $query
      * @return Builder<Post>
@@ -92,6 +98,9 @@ class Post extends Model
                 $q->withExists([
                     'likes as liked_by_user' => function (Builder $likeQuery) use ($authUserId) {
                         $likeQuery->where('user_id', $authUserId);
+                    },
+                    'savedByUsers as is_saved' => function (Builder $savedQuery) use ($authUserId) {
+                        $savedQuery->where('user_id', $authUserId);
                     },
                 ]);
             });

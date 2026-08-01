@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
     /**
      * Likes received across all posts owned by this user.
      */

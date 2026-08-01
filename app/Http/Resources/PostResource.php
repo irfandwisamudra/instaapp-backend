@@ -28,6 +28,7 @@ class PostResource extends JsonResource
             'likes_count' => (int) ($this->likes_count ?? 0),
             'comments_count' => (int) ($this->comments_count ?? 0),
             'liked_by_user' => (bool) ($this->liked_by_user ?? false),
+            'is_saved' => (bool) ($this->is_saved ?? false),
             'can_update' => $user ? $user->can('update', $this->resource) : false,
             'can_delete' => $user ? $user->can('delete', $this->resource) : false,
             'created_at' => $this->created_at?->toISOString(),
