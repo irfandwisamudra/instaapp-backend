@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
 
         // Profiles
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+        Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/users/{username}', [ProfileController::class, 'showByUsername'])->name('users.profile');
         Route::get('/users/{username}/posts', [ProfileController::class, 'userPosts'])->name('users.posts');
     });

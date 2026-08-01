@@ -3,6 +3,8 @@
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -44,4 +46,79 @@ test('unknown username returns 404', function () {
     $response = $this->actingAs($user)->getJson('/api/v1/users/nonexistentuser');
 
     $response->assertStatus(404);
+});
+
+test('user can update profile details', function () {
+    $user = User::factory()->create([
+        'name' => 'Original Name',
+        'username' => 'originaluser',
+        'bio' => 'Original Bio',
+    ]);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/profile', [
+        'name' => 'Updated Name',
+        'username' => 'updateduser',
+        'bio' => 'Updated Bio',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.name', 'Updated Name')
+        ->assertJsonPath('data.username', 'updateduser')
+        ->assertJsonPath('data.bio', 'Updated Bio');
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'name' => 'Updated Name',
+        'username' => 'updateduser',
+        'bio' => 'Updated Bio',
+    ]);
+});
+
+test('user cannot update profile with existing username', function () {
+    User::factory()->create(['username' => 'takenname']);
+    $user = User::factory()->create(['username' => 'myname']);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/profile', [
+        'username' => 'takenname',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['username']);
+});
+
+test('user can upload avatar image', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+    $file = UploadedFile::fake()->image('avatar.jpg', 200, 200);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/profile', [
+        'avatar' => $file,
+    ]);
+
+    $response->assertStatus(200);
+    $user->refresh();
+
+    expect($user->avatar_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($user->avatar_path);
+});
+
+test('user can remove avatar', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create([
+        'avatar_path' => 'avatars/sample.jpg',
+    ]);
+    Storage::disk('public')->put('avatars/sample.jpg', 'content');
+
+    $response = $this->actingAs($user)->postJson('/api/v1/profile', [
+        'remove_avatar' => true,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.avatar_url', null);
+
+    $user->refresh();
+    expect($user->avatar_path)->toBeNull();
+    Storage::disk('public')->assertMissing('avatars/sample.jpg');
 });
