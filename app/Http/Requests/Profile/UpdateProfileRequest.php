@@ -22,21 +22,27 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        /** @var \App\Models\User $user */
         $user = $this->user();
+        $userId = $user?->id;
+
+        $usernameRules = [
+            'sometimes',
+            'string',
+            'min:3',
+            'max:50',
+            'regex:/^[a-zA-Z0-9_]+$/',
+        ];
+
+        // Only enforce unique constraint if the username is being changed to a different value
+        if ($this->filled('username') && $user && strtolower((string) $this->input('username')) !== strtolower((string) $user->username)) {
+            $usernameRules[] = Rule::unique('users', 'username')->ignore($userId);
+        }
 
         return [
-            'name'   => ['sometimes', 'string', 'max:255'],
-            'username' => [
-                'sometimes',
-                'string',
-                'min:3',
-                'max:50',
-                'regex:/^[a-zA-Z0-9_]+$/',
-                Rule::unique('users', 'username')->ignore($user->id),
-            ],
-            'bio'    => ['sometimes', 'nullable', 'string', 'max:500'],
-            'avatar' => [
+            'name'     => ['sometimes', 'string', 'max:255'],
+            'username' => $usernameRules,
+            'bio'      => ['sometimes', 'nullable', 'string', 'max:500'],
+            'avatar'   => [
                 'sometimes',
                 'nullable',
                 'image',

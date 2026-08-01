@@ -94,7 +94,26 @@ test('user can update profile details', function () {
     ]);
 });
 
-test('user cannot update profile with existing username', function () {
+test('user can update profile without changing username', function () {
+    $user = User::factory()->create([
+        'name' => 'My Name',
+        'username' => 'myusername',
+        'bio' => 'Old bio',
+    ]);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/profile', [
+        'name' => 'New Name',
+        'username' => 'myusername',
+        'bio' => 'New bio',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.name', 'New Name')
+        ->assertJsonPath('data.username', 'myusername')
+        ->assertJsonPath('data.bio', 'New bio');
+});
+
+test('user cannot update profile with existing username of another user', function () {
     User::factory()->create(['username' => 'takenname']);
     $user = User::factory()->create(['username' => 'myname']);
 
